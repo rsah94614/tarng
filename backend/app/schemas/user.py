@@ -1,6 +1,7 @@
 """
 Pydantic schemas for User endpoints.
 """
+
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
@@ -36,6 +37,7 @@ class UserOut(BaseModel):
 
 class UserPublic(BaseModel):
     """Public-facing profile (no email)."""
+
     id: int
     username: str
     display_name: str | None

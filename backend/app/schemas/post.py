@@ -1,6 +1,7 @@
 """
 Pydantic schemas for Post, Comment, and Reaction endpoints.
 """
+
 from datetime import datetime
 from typing import Literal
 
@@ -12,6 +13,7 @@ ReactionType = Literal["like", "insightful", "helpful"]
 
 
 # ─── Reactions ────────────────────────────────────────────────
+
 
 class ReactionCreate(BaseModel):
     reaction_type: ReactionType
@@ -25,6 +27,7 @@ class ReactionSummary(BaseModel):
 
 
 # ─── Posts / Comments ─────────────────────────────────────────
+
 
 class PostCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=10000)
@@ -71,5 +74,6 @@ class CommentOut(BaseModel):
 
 class CommentThreadOut(BaseModel):
     """A comment with its direct replies (2 levels max for V1)."""
+
     comment: CommentOut
     replies: list[CommentOut] = []

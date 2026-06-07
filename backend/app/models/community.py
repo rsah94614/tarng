@@ -1,6 +1,7 @@
 """
 Community (Wave) ORM models.
 """
+
 from datetime import datetime
 from typing import Optional
 
@@ -30,7 +31,9 @@ class Community(Base):
     banner_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_by_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -41,7 +44,9 @@ class Community(Base):
 
     # Relationships
     creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by_id])  # type: ignore[name-defined]  # noqa: F821
-    members: Mapped[list["CommunityMember"]] = relationship("CommunityMember", back_populates="community")
+    members: Mapped[list["CommunityMember"]] = relationship(
+        "CommunityMember", back_populates="community"
+    )
     posts: Mapped[list["Post"]] = relationship("Post", back_populates="community")  # type: ignore[name-defined]  # noqa: F821
 
     @property
@@ -52,14 +57,16 @@ class Community(Base):
 class CommunityMember(Base):
     __tablename__ = "community_members"
 
-    __table_args__ = (
-        UniqueConstraint("community_id", "user_id", name="uq_community_member"),
-    )
+    __table_args__ = (UniqueConstraint("community_id", "user_id", name="uq_community_member"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    community_id: Mapped[int] = mapped_column(ForeignKey("communities.id", ondelete="CASCADE"), nullable=False)
+    community_id: Mapped[int] = mapped_column(
+        ForeignKey("communities.id", ondelete="CASCADE"), nullable=False
+    )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    role: Mapped[str] = mapped_column(String(20), default="member", nullable=False)  # owner | moderator | member
+    role: Mapped[str] = mapped_column(
+        String(20), default="member", nullable=False
+    )  # owner | moderator | member
 
     joined_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

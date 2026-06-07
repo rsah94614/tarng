@@ -52,6 +52,7 @@ async def login(
         db_user = user_service.get_user_by_username(db, form_data.username)
         if db_user:
             from app.core.security import verify_password
+
             if verify_password(form_data.password, db_user.hashed_password) and db_user.is_active:
                 user = db_user
 

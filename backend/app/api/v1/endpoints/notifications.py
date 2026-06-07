@@ -1,6 +1,7 @@
 """
 Notification endpoints.
 """
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -24,18 +25,20 @@ async def get_notifications(
     )
     out_items = []
     for n in items:
-        out_items.append(NotificationOut(
-            id=n.id,
-            notification_type=n.notification_type,
-            message=n.message,
-            is_read=n.is_read,
-            actor_id=n.actor_id,
-            actor_username=n.actor.username if n.actor else None,
-            actor_avatar_url=n.actor.avatar_url if n.actor else None,
-            post_id=n.post_id,
-            community_id=n.community_id,
-            created_at=n.created_at,
-        ))
+        out_items.append(
+            NotificationOut(
+                id=n.id,
+                notification_type=n.notification_type,
+                message=n.message,
+                is_read=n.is_read,
+                actor_id=n.actor_id,
+                actor_username=n.actor.username if n.actor else None,
+                actor_avatar_url=n.actor.avatar_url if n.actor else None,
+                post_id=n.post_id,
+                community_id=n.community_id,
+                created_at=n.created_at,
+            )
+        )
     return NotificationListOut(items=out_items, total=total, unread_count=unread_count)
 
 
@@ -59,5 +62,6 @@ async def mark_one_read(
     ok = notification_service.mark_notification_read(db, notification_id, user_id)
     if not ok:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=404, detail="Notification not found")
     return {"marked_read": True}

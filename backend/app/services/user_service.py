@@ -1,6 +1,7 @@
 """
 User service — business logic for auth and profile management.
 """
+
 import logging
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -79,7 +80,9 @@ def create_password_reset_token(db: Session, email: str) -> str | None:
 
     token = secrets.token_urlsafe(32)
     user.password_reset_token = token
-    user.password_reset_expires = datetime.now(timezone.utc) + timedelta(hours=PASSWORD_RESET_EXPIRE_HOURS)
+    user.password_reset_expires = datetime.now(timezone.utc) + timedelta(
+        hours=PASSWORD_RESET_EXPIRE_HOURS
+    )
     db.commit()
     return token
 
@@ -89,11 +92,7 @@ def reset_password(db: Session, token: str, new_password: str) -> bool:
     Validate the token and set the new password.
     Returns True on success, False if token is invalid or expired.
     """
-    user = (
-        db.query(User)
-        .filter(User.password_reset_token == token)
-        .first()
-    )
+    user = db.query(User).filter(User.password_reset_token == token).first()
     if not user:
         return False
     if not user.password_reset_expires:

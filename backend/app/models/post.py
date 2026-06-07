@@ -1,6 +1,7 @@
 """
 Post, Comment (nested via parent_id), and Reaction ORM models.
 """
+
 from datetime import datetime
 from typing import Optional
 
@@ -27,6 +28,7 @@ class Post(Base):
     - parent_id = comment → reply to that comment
     community_id is set only on top-level posts.
     """
+
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -43,7 +45,9 @@ class Post(Base):
 
     # Content
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    content_type: Mapped[str] = mapped_column(String(20), default="text", nullable=False)  # text | markdown
+    content_type: Mapped[str] = mapped_column(
+        String(20), default="text", nullable=False
+    )  # text | markdown
     image_urls: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
 
     # Threading — self-referential
@@ -82,11 +86,10 @@ class Post(Base):
 
 class Reaction(Base):
     """Like / Insightful / Helpful — one per user per post."""
+
     __tablename__ = "reactions"
 
-    __table_args__ = (
-        UniqueConstraint("user_id", "post_id", name="uq_user_post_reaction"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "post_id", name="uq_user_post_reaction"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(

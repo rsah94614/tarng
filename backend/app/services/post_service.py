@@ -1,6 +1,7 @@
 """
 Post service — feed, CRUD, comments, mentions.
 """
+
 import logging
 import re
 
@@ -32,6 +33,7 @@ def _build_reaction_summary(post: Post, current_user_id: int | None) -> Reaction
 
 # ─── Feed ─────────────────────────────────────────────────────
 
+
 def get_feed(
     db: Session,
     current_user_id: int | None,
@@ -54,6 +56,7 @@ def get_feed(
 
 
 # ─── Post CRUD ────────────────────────────────────────────────
+
 
 def create_post(db: Session, payload: PostCreate, author_id: int) -> Post:
     post = Post(
@@ -89,6 +92,7 @@ def delete_post(db: Session, post_id: int, author_id: int) -> bool:
 
 
 # ─── Comments ─────────────────────────────────────────────────
+
 
 def get_comments(
     db: Session,
@@ -148,9 +152,7 @@ def get_comment_count(db: Session, post_id: int) -> int:
     return db.query(func.count(Post.id)).filter(Post.parent_id == post_id).scalar() or 0
 
 
-def build_post_out_data(
-    post: Post, db: Session, current_user_id: int | None = None
-) -> dict:
+def build_post_out_data(post: Post, db: Session, current_user_id: int | None = None) -> dict:
     """Helper to enrich a Post ORM object with computed fields."""
     return {
         "id": post.id,

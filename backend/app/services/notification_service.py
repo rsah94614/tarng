@@ -1,6 +1,7 @@
 """
 Notification service — create, query, and push notifications via WebSocket.
 """
+
 import json
 import logging
 
@@ -47,8 +48,7 @@ def get_notifications(
     total = base_q.count()
     unread_count = base_q.filter(Notification.is_read.is_(False)).count()
     items = (
-        base_q
-        .options(joinedload(Notification.actor))
+        base_q.options(joinedload(Notification.actor))
         .order_by(Notification.created_at.desc())
         .offset(skip)
         .limit(limit)
@@ -100,12 +100,15 @@ async def push_notification_ws(notification: Notification, actor: User | None = 
         }
 
         from app.core.config import settings
+
         if settings.ENVIRONMENT == "development":
             # In single-instance dev mode, just push directly
             from app.websocket.manager import manager
+
             await manager.send_to_user(notification.recipient_id, payload)
         else:
             from app.db.redis import get_redis
+
             redis = await get_redis()
             channel = f"user:{notification.recipient_id}:notifications"
             await redis.publish(channel, json.dumps(payload))

@@ -7,6 +7,7 @@ Supports:
 - Room-based broadcasts (e.g. "feed", "notifications:{user_id}")
 - Redis Pub/Sub for multi-instance broadcasting
 """
+
 from __future__ import annotations
 
 import logging
@@ -26,7 +27,9 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket, user_id: int) -> None:
         await websocket.accept()
         self._connections[user_id].add(websocket)
-        logger.info(f"WS connected: user={user_id}, total_sockets={len(self._connections[user_id])}")
+        logger.info(
+            f"WS connected: user={user_id}, total_sockets={len(self._connections[user_id])}"
+        )
 
     def disconnect(self, websocket: WebSocket, user_id: int) -> None:
         self._connections[user_id].discard(websocket)

@@ -5,6 +5,7 @@ Listens to two channel patterns:
   - ws:broadcast          → broadcast to all connected users
   - user:{id}:notifications → push to a specific user
 """
+
 import json
 import logging
 

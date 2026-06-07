@@ -4,6 +4,7 @@ Arq background worker.
 Define async task functions here. Register them in WorkerSettings.
 Run with: arq app.workers.worker.WorkerSettings
 """
+
 import logging
 
 from arq.connections import RedisSettings

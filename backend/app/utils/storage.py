@@ -1,6 +1,7 @@
 """
 MinIO / S3 storage utilities.
 """
+
 import boto3
 from botocore.client import BaseClient
 

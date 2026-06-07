@@ -47,10 +47,12 @@ async def list_communities(
     communities, _ = community_service.list_communities(db, skip=skip, limit=limit)
     result = []
     for c in communities:
-        result.append(CommunityOut(
-            **{k: getattr(c, k) for k in c.__table__.columns.keys()},
-            member_count=community_service.get_member_count(db, c.id),
-        ))
+        result.append(
+            CommunityOut(
+                **{k: getattr(c, k) for k in c.__table__.columns.keys()},
+                member_count=community_service.get_member_count(db, c.id),
+            )
+        )
     return result
 
 
@@ -90,6 +92,7 @@ async def join_community(
             community_id=community.id,
         )
         import asyncio
+
         asyncio.create_task(notification_service.push_notification_ws(notif, actor))
 
     return {"joined": True, "slug": slug}
@@ -119,5 +122,7 @@ async def get_community_posts(
 ) -> list[PostOut]:
     """Get posts in a Wave, newest first."""
     community = _get_community_or_404(slug, db)
-    posts, _ = post_service.get_feed(db, current_user_id=user_id, community_id=community.id, skip=skip, limit=limit)
+    posts, _ = post_service.get_feed(
+        db, current_user_id=user_id, community_id=community.id, skip=skip, limit=limit
+    )
     return [PostOut(**build_post_out_data(p, db, user_id)) for p in posts]

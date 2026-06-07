@@ -1,6 +1,7 @@
 """
 Reaction service — toggle Like / Insightful / Helpful.
 """
+
 import logging
 
 from sqlalchemy.exc import IntegrityError
@@ -25,9 +26,7 @@ def toggle_reaction(
     Returns the new reaction or None if removed.
     """
     existing = (
-        db.query(Reaction)
-        .filter(Reaction.post_id == post_id, Reaction.user_id == user_id)
-        .first()
+        db.query(Reaction).filter(Reaction.post_id == post_id, Reaction.user_id == user_id).first()
     )
 
     if existing:
@@ -66,7 +65,5 @@ def toggle_reaction(
 
 def get_user_reaction(db: Session, post_id: int, user_id: int) -> Reaction | None:
     return (
-        db.query(Reaction)
-        .filter(Reaction.post_id == post_id, Reaction.user_id == user_id)
-        .first()
+        db.query(Reaction).filter(Reaction.post_id == post_id, Reaction.user_id == user_id).first()
     )

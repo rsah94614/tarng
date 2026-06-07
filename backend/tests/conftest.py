@@ -1,6 +1,7 @@
 """
 Tests package — configure pytest fixtures here.
 """
+
 import pytest
 from fastapi.testclient import TestClient
 

@@ -1,6 +1,7 @@
 """
 Community (Wave) service.
 """
+
 import logging
 import re
 
@@ -64,9 +65,7 @@ def get_community_by_id(db: Session, community_id: int) -> Community | None:
     return db.query(Community).filter(Community.id == community_id).first()
 
 
-def list_communities(
-    db: Session, skip: int = 0, limit: int = 20
-) -> tuple[list[Community], int]:
+def list_communities(db: Session, skip: int = 0, limit: int = 20) -> tuple[list[Community], int]:
     total = db.query(func.count(Community.id)).scalar() or 0
     communities = (
         db.query(Community)

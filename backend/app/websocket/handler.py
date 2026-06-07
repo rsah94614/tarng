@@ -4,6 +4,7 @@ and handles incoming pings.
 
 Connect: ws://host/ws?token=<access_token>
 """
+
 import json
 import logging
 

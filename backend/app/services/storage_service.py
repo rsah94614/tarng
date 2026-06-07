@@ -1,6 +1,7 @@
 """
 MinIO / S3 file storage service.
 """
+
 import logging
 import uuid
 
@@ -58,7 +59,7 @@ def delete_file(url: str) -> bool:
         prefix = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET_NAME}/"
         if not url.startswith(prefix):
             return False
-        key = url[len(prefix):]
+        key = url[len(prefix) :]
         client = get_s3_client()
         client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=key)
         return True

@@ -1,6 +1,7 @@
 """
 Post endpoints: feed, CRUD, comments, reactions, mentions.
 """
+
 import asyncio
 import re
 
@@ -41,6 +42,7 @@ def _build_comment_out(comment: Post, db: Session, user_id: int) -> CommentOut:
 
 # ─── Feed ─────────────────────────────────────────────────────
 
+
 @router.get("", response_model=list[PostOut])
 async def get_feed(
     skip: int = Query(0, ge=0),
@@ -57,6 +59,7 @@ async def get_feed(
 
 
 # ─── Create Post ──────────────────────────────────────────────
+
 
 @router.post("", response_model=PostOut, status_code=status.HTTP_201_CREATED)
 async def create_post(
@@ -92,6 +95,7 @@ async def upload_post_image(
 
 # ─── Single Post ──────────────────────────────────────────────
 
+
 @router.get("/{post_id}", response_model=PostOut)
 async def get_post(
     post_id: int,
@@ -119,6 +123,7 @@ async def delete_post(
 
 # ─── Comments & Replies ───────────────────────────────────────
 
+
 @router.get("/{post_id}/comments", response_model=list[CommentThreadOut])
 async def get_comments(
     post_id: int,
@@ -136,10 +141,12 @@ async def get_comments(
     result = []
     for comment in comments:
         replies_raw = post_service.get_replies(db, comment.id, user_id)
-        result.append(CommentThreadOut(
-            comment=_build_comment_out(comment, db, user_id),
-            replies=[_build_comment_out(r, db, user_id) for r in replies_raw],
-        ))
+        result.append(
+            CommentThreadOut(
+                comment=_build_comment_out(comment, db, user_id),
+                replies=[_build_comment_out(r, db, user_id) for r in replies_raw],
+            )
+        )
     return result
 
 
@@ -179,6 +186,7 @@ async def create_comment(
 
 # ─── Reactions ────────────────────────────────────────────────
 
+
 @router.post("/{post_id}/reactions", response_model=ReactionSummary)
 async def toggle_reaction(
     post_id: int,
@@ -188,6 +196,7 @@ async def toggle_reaction(
 ) -> ReactionSummary:
     """Toggle a reaction (like/insightful/helpful) on a post or comment."""
     from app.models.post import Post as PostModel
+
     post_obj = db.query(PostModel).filter(PostModel.id == post_id).first()
     if not post_obj:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -197,10 +206,12 @@ async def toggle_reaction(
     # Re-fetch post to get updated reactions
     db.refresh(post_obj)
     from app.services.post_service import _build_reaction_summary
+
     return _build_reaction_summary(post_obj, user_id)
 
 
 # ─── Internal: mentions ───────────────────────────────────────
+
 
 async def _handle_mentions(db: Session, post: Post, actor_id: int) -> None:
     """Notify mentioned users (@username) in a post or comment."""

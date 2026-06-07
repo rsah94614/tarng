@@ -2,6 +2,7 @@
 Email service — sends password reset emails.
 Falls back to console logging if SMTP is not configured.
 """
+
 import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart

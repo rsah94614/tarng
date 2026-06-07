@@ -1,6 +1,7 @@
 """
 tarng FastAPI application factory.
 """
+
 import asyncio
 import logging
 
@@ -54,6 +55,7 @@ def create_app() -> FastAPI:
         logger.info("tarng API starting up...")
         if settings.ENVIRONMENT != "development":
             from app.websocket.pubsub import pubsub_listener
+
             asyncio.create_task(pubsub_listener())
 
     @application.on_event("shutdown")

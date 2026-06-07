@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     def assemble_cors_origins(cls, v: Any) -> Any:
         if isinstance(v, str):
             import json
+
             return json.loads(v)
         return v
 

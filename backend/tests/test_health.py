@@ -1,6 +1,7 @@
 """
 Basic smoke tests — verify the app starts and key endpoints respond.
 """
+
 from fastapi.testclient import TestClient
 
 

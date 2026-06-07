@@ -1,6 +1,7 @@
 """
 User endpoints: me, update profile, upload avatar, public profile.
 """
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 

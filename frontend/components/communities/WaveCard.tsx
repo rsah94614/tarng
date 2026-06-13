@@ -24,7 +24,7 @@ export function WaveCard({ wave, className }: WaveCardProps) {
         {wave.banner_url ? (
           <img src={wave.banner_url} alt="Cover" className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
+          <div className="h-full w-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
         )}
       </div>
 
@@ -38,9 +38,16 @@ export function WaveCard({ wave, className }: WaveCardProps) {
           />
         </div>
 
-        <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
-          {wave.name}
-        </h3>
+        <div className="flex items-start justify-between">
+          <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
+            {wave.name}
+          </h3>
+          {wave.depth > 0 && (
+            <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded border border-primary/20 shrink-0 ml-2">
+              L{wave.depth} Sub-Wave
+            </span>
+          )}
+        </div>
         
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground min-h-[40px]">
           {wave.description || "No description provided."}

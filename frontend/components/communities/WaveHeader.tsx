@@ -48,7 +48,7 @@ export function WaveHeader({ wave }: WaveHeaderProps) {
         {wave.banner_url ? (
           <img src={wave.banner_url} alt="Cover" className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
+          <div className="h-full w-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
         )}
       </div>
 
@@ -84,9 +84,17 @@ export function WaveHeader({ wave }: WaveHeaderProps) {
           {wave.description || "Welcome to our Wave!"}
         </p>
 
-        <div className="mt-4 flex items-center gap-2 font-medium text-muted-foreground">
-          <Users className="h-5 w-5" />
-          <span>{wave.member_count} members</span>
+        <div className="mt-4 flex items-center gap-4 font-medium text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            <span>{wave.member_count} members</span>
+          </div>
+          {wave.children_count > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xl leading-none">&bull;</span>
+              <span>{wave.children_count} sub-waves</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

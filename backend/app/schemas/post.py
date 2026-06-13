@@ -8,6 +8,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.user import UserPublic
+from app.schemas.poll import PollCreate, PollOut
+from app.schemas.event import EventCreate, EventOut
 
 ReactionType = Literal["like", "insightful", "helpful"]
 
@@ -33,6 +35,15 @@ class PostCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=10000)
     content_type: Literal["text", "markdown"] = "text"
     community_id: int | None = None
+    section_id: int | None = None
+    image_urls: list[str] | None = None
+    post_metadata: dict | None = None
+    poll: PollCreate | None = None
+    event: EventCreate | None = None
+
+
+class PostUpdate(BaseModel):
+    content: str | None = Field(None, min_length=1, max_length=10000)
     image_urls: list[str] | None = None
 
 
@@ -46,12 +57,16 @@ class PostOut(BaseModel):
     id: int
     author: UserPublic
     community_id: int | None
+    section_id: int | None
     content: str
     content_type: str
     image_urls: list[str] | None
+    post_metadata: dict | None = None
     parent_id: int | None
     reactions: ReactionSummary
     comment_count: int
+    poll: PollOut | None = None
+    event: EventOut | None = None
     created_at: datetime
     updated_at: datetime
 

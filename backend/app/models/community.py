@@ -35,6 +35,22 @@ class Community(Base):
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
+    # ─── Nesting ──────────────────────────────────────────────
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("communities.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    depth: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    path: Mapped[str] = mapped_column(Text, default="", nullable=False)  # materialized path: "1.5.12"
+
+    # ─── Template ─────────────────────────────────────────────
+    template_id: Mapped[int | None] = mapped_column(
+        ForeignKey("community_templates.id", ondelete="SET NULL"), nullable=True
+    )
+
+    # ─── Soft delete ──────────────────────────────────────────
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # ─── Timestamps ───────────────────────────────────────────
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -42,16 +58,37 @@ class Community(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    # Relationships
+    # ─── Relationships ────────────────────────────────────────
     creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by_id])  # type: ignore[name-defined]  # noqa: F821
     members: Mapped[list["CommunityMember"]] = relationship(
         "CommunityMember", back_populates="community"
     )
     posts: Mapped[list["Post"]] = relationship("Post", back_populates="community")  # type: ignore[name-defined]  # noqa: F821
 
+    # Nesting relationships
+    parent: Mapped[Optional["Community"]] = relationship(
+        "Community", back_populates="children", remote_side="Community.id", foreign_keys=[parent_id]
+    )
+    children: Mapped[list["Community"]] = relationship(
+        "Community", back_populates="parent", foreign_keys=[parent_id]
+    )
+
+    # Sections
+    sections: Mapped[list["CommunitySection"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        "CommunitySection", back_populates="community", cascade="all, delete-orphan",
+        order_by="CommunitySection.position"
+    )
+
+    # Template
+    template: Mapped[Optional["CommunityTemplate"]] = relationship("CommunityTemplate")  # type: ignore[name-defined]  # noqa: F821
+
     @property
     def member_count(self) -> int:
         return len(self.members)
+
+    @property
+    def children_count(self) -> int:
+        return len(self.children)
 
 
 class CommunityMember(Base):
@@ -66,7 +103,7 @@ class CommunityMember(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     role: Mapped[str] = mapped_column(
         String(20), default="member", nullable=False
-    )  # owner | moderator | member
+    )  # owner | admin | moderator | member
 
     joined_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

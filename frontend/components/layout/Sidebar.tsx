@@ -19,7 +19,7 @@ export function Sidebar() {
   return (
     <div className="flex flex-col h-full p-4">
       <Link href="/feed" className="flex items-center gap-2 px-4 py-6 mb-4">
-        <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">
+        <span className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-indigo-500">
           tarng
         </span>
       </Link>
@@ -75,10 +75,13 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto mb-4">
-        <button className="flex w-full items-center justify-center gap-2 rounded-full bg-primary p-4 text-primary-foreground font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-lg hover:shadow-xl hover:-translate-y-0.5 shadow-primary/25">
+        <Link 
+          href="/post/create"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary p-4 text-primary-foreground font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-lg hover:shadow-xl hover:-translate-y-0.5 shadow-primary/25"
+        >
           <PlusCircle className="h-6 w-6" />
           <span className="hidden lg:inline">Post</span>
-        </button>
+        </Link>
       </div>
     </div>
   );

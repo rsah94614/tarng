@@ -16,6 +16,7 @@ from app.schemas.post import (
     CommentThreadOut,
     PostCreate,
     PostOut,
+    PostUpdate,
     ReactionCreate,
     ReactionSummary,
 )
@@ -27,6 +28,13 @@ from app.services import (
     user_service,
 )
 from app.services.post_service import _extract_mentions, build_post_out_data
+from pydantic import BaseModel
+
+class PollVoteCreate(BaseModel):
+    option_id: int
+
+class EventRSVPCreate(BaseModel):
+    status: str
 
 router = APIRouter()
 
@@ -121,6 +129,22 @@ async def delete_post(
         raise HTTPException(status_code=404, detail="Post not found or not yours")
 
 
+@router.put("/{post_id}", response_model=PostOut)
+async def update_post(
+    post_id: int,
+    payload: PostUpdate,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+) -> PostOut:
+    """Update your own post."""
+    post = post_service.update_post(
+        db, post_id, author_id=user_id, payload=payload.model_dump(exclude_unset=True)
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found or not yours")
+    return PostOut(**build_post_out_data(post, db, user_id))
+
+
 # ─── Comments & Replies ───────────────────────────────────────
 
 
@@ -208,6 +232,48 @@ async def toggle_reaction(
     from app.services.post_service import _build_reaction_summary
 
     return _build_reaction_summary(post_obj, user_id)
+
+
+# ─── Polls & Events ───────────────────────────────────────────
+
+
+@router.post("/{post_id}/poll/vote", response_model=PostOut)
+async def vote_poll(
+    post_id: int,
+    payload: PollVoteCreate,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+) -> PostOut:
+    """Vote on a poll."""
+    success = post_service.vote_poll(db, post_id, payload.option_id, user_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to cast vote")
+    
+    post = post_service.get_post(db, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return PostOut(**build_post_out_data(post, db, user_id))
+
+
+@router.post("/{post_id}/event/rsvp", response_model=PostOut)
+async def rsvp_event(
+    post_id: int,
+    payload: EventRSVPCreate,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+) -> PostOut:
+    """RSVP to an event."""
+    if payload.status not in ("going", "maybe", "not_going"):
+        raise HTTPException(status_code=400, detail="Invalid RSVP status")
+        
+    success = post_service.rsvp_event(db, post_id, payload.status, user_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to RSVP")
+        
+    post = post_service.get_post(db, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return PostOut(**build_post_out_data(post, db, user_id))
 
 
 # ─── Internal: mentions ───────────────────────────────────────

@@ -10,17 +10,18 @@ import { MessageSquare } from "lucide-react";
 
 export interface FeedListProps {
   communityId?: number;
+  sectionId?: number;
   newPost?: Post | null;
 }
 
-export function FeedList({ communityId, newPost }: FeedListProps) {
+export function FeedList({ communityId, sectionId, newPost }: FeedListProps) {
   const [posts, setPosts] = React.useState<Post[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
 
-  const [prevCommunityId, setPrevCommunityId] = React.useState(communityId);
-  if (communityId !== prevCommunityId) {
-    setPrevCommunityId(communityId);
+  const [prevProps, setPrevProps] = React.useState({ communityId, sectionId });
+  if (communityId !== prevProps.communityId || sectionId !== prevProps.sectionId) {
+    setPrevProps({ communityId, sectionId });
     setLoading(true);
     setPosts([]);
     setError(false);
@@ -40,7 +41,12 @@ export function FeedList({ communityId, newPost }: FeedListProps) {
   React.useEffect(() => {
     let mounted = true;
     
-    postService.getFeed(0, 50, communityId)
+    // We don't have a getSectionPosts by ID in the service, only by slug,
+    // but the backend `getFeed` actually supports section_id now if we pass it.
+    // Wait, let's update postService.getFeed to accept sectionId.
+    // Actually, I can just update the frontend postService to take section_id!
+    // But earlier I just added community_id to `getFeed`. I need to add section_id to `getFeed` in postService.ts.
+    postService.getFeed(0, 50, communityId, sectionId)
       .then((data) => {
         if (mounted) setPosts(data);
       })
@@ -52,7 +58,7 @@ export function FeedList({ communityId, newPost }: FeedListProps) {
       });
 
     return () => { mounted = false; };
-  }, [communityId]);
+  }, [communityId, sectionId]);
 
   if (loading) {
     return <div className="flex py-12 justify-center"><Spinner size="lg" /></div>;
@@ -78,9 +84,16 @@ export function FeedList({ communityId, newPost }: FeedListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard
+          key={post.id}
+          post={post}
+          onDelete={(id) => setPosts((prev) => prev.filter((p) => p.id !== id))}
+          onUpdate={(updated) =>
+            setPosts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+          }
+        />
       ))}
     </div>
   );

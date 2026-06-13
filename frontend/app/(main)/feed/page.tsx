@@ -6,16 +6,13 @@ import { PostComposer } from "@/components/posts/PostComposer";
 import type { Post } from "@/types";
 
 export default function FeedPage() {
-  const [newPost, setNewPost] = React.useState<Post | null>(null);
-
   return (
     <div className="space-y-6 pt-4">
-      <div className="px-4 md:px-0">
-        <h1 className="text-2xl font-bold mb-4">Home</h1>
-        <PostComposer onPostCreated={setNewPost} />
+      <div className="px-4 md:px-0 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Home</h1>
       </div>
       <div className="px-4 md:px-0">
-        <FeedList newPost={newPost} />
+        <FeedList />
       </div>
     </div>
   );

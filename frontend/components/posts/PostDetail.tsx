@@ -12,8 +12,10 @@ import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { postService } from "@/services/postService";
 import type { Post, CommentThread as ThreadType } from "@/types";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MoreHorizontal, Edit2, Trash2, Share } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
+import { PostComposer } from "./PostComposer";
 
 export interface PostDetailProps {
   postId: number;
@@ -25,6 +27,34 @@ export function PostDetail({ postId }: PostDetailProps) {
   const [threads, setThreads] = React.useState<ThreadType[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
+  const { user } = useAuthStore();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [showMenu, setShowMenu] = React.useState(false);
+
+  const isAuthor = user?.username === post?.author.username;
+
+  const handleDelete = async () => {
+    if (!post) return;
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await postService.deletePost(post.id);
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to delete post", error);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!post) return;
+    const url = `${window.location.origin}/post/${post.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy", err);
+    }
+    setShowMenu(false);
+  };
 
   const [prevPostId, setPrevPostId] = React.useState(postId);
   if (postId !== prevPostId) {
@@ -86,28 +116,97 @@ export function PostDetail({ postId }: PostDetailProps) {
 
       {/* Main Post */}
       <div className="p-4 rounded-xl border bg-card">
-        <div className="flex items-center gap-3 mb-4">
-          <Link href={`/profile/${post.author.username}`}>
-            <Avatar src={post.author.avatar_url} alt={post.author.username} size="lg" />
-          </Link>
-          <div>
-            <Link href={`/profile/${post.author.username}`} className="font-bold text-base hover:underline block">
-              {post.author.display_name || post.author.username}
+        <div className="flex items-center justify-between gap-3 mb-4 relative">
+          <div className="flex items-center gap-3">
+            <Link href={`/profile/${post.author.username}`}>
+              <Avatar src={post.author.avatar_url} alt={post.author.username} size="lg" />
             </Link>
-            <div className="text-sm text-muted-foreground">
-              @{post.author.username} • <TimeAgo date={post.created_at} />
+            <div>
+              <Link href={`/profile/${post.author.username}`} className="font-bold text-base hover:underline block">
+                {post.author.display_name || post.author.username}
+              </Link>
+              <div className="text-sm text-muted-foreground">
+                @{post.author.username} • <TimeAgo date={post.created_at} />
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="text-lg">
-          <MarkdownRenderer content={post.content} />
-        </div>
-
-        {post.image_urls && post.image_urls.length > 0 && (
-          <div className="mt-4 overflow-hidden rounded-xl border">
-            <img src={post.image_urls[0]} alt="Post attachment" className="w-full object-cover" />
+          
+          {/* Options Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-1.5 rounded-full hover:bg-muted text-muted-foreground transition-colors"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
+            
+            {showMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowMenu(false)} 
+                />
+                <div className="absolute right-0 top-full mt-1 w-40 rounded-md border bg-popover shadow-md z-20 overflow-hidden text-sm">
+                  <button
+                    onClick={handleShare}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted text-foreground transition-colors"
+                  >
+                    <Share className="h-4 w-4" /> Share
+                  </button>
+                  
+                  {isAuthor && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted text-foreground transition-colors"
+                      >
+                        <Edit2 className="h-4 w-4" /> Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDelete();
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-muted text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" /> Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
+        </div>
+
+        {isEditing ? (
+          <div className="mb-6">
+            <PostComposer
+              communityId={post.community_id || undefined}
+              postId={post.id}
+              initialContent={post.content}
+              onCancel={() => setIsEditing(false)}
+              onPostCreated={(updatedPost) => {
+                setIsEditing(false);
+                setPost(updatedPost);
+              }}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="text-lg">
+              <MarkdownRenderer content={post.content} />
+            </div>
+
+            {post.image_urls && post.image_urls.length > 0 && (
+              <div className="mt-4 overflow-hidden rounded-xl border">
+                <img src={post.image_urls[0]} alt="Post attachment" className="w-full object-cover" />
+              </div>
+            )}
+          </>
         )}
 
         <div className="mt-6 flex items-center justify-between border-t pt-4">

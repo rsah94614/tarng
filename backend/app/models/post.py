@@ -15,6 +15,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
@@ -43,12 +44,18 @@ class Post(Base):
         ForeignKey("communities.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
+    # Section (which section this post belongs to)
+    section_id: Mapped[int | None] = mapped_column(
+        ForeignKey("community_sections.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
     # Content
     content: Mapped[str] = mapped_column(Text, nullable=False)
     content_type: Mapped[str] = mapped_column(
         String(20), default="text", nullable=False
     )  # text | markdown
     image_urls: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
+    post_metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     # Threading — self-referential
     parent_id: Mapped[int | None] = mapped_column(
@@ -70,6 +77,9 @@ class Post(Base):
     community: Mapped[Optional["Community"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
         "Community", back_populates="posts"
     )
+    section: Mapped[Optional["CommunitySection"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        "CommunitySection", back_populates="posts"
+    )
     parent: Mapped[Optional["Post"]] = relationship(
         "Post", back_populates="children", remote_side="Post.id", foreign_keys=[parent_id]
     )
@@ -81,6 +91,12 @@ class Post(Base):
     )
     notifications: Mapped[list["Notification"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
         "Notification", back_populates="post"
+    )
+    poll: Mapped[Optional["Poll"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        "Poll", back_populates="post", uselist=False, cascade="all, delete-orphan"
+    )
+    event: Mapped[Optional["Event"]] = relationship(  # type: ignore[name-defined]  # noqa: F821
+        "Event", back_populates="post", uselist=False, cascade="all, delete-orphan"
     )
 
 
